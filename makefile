@@ -28,7 +28,7 @@ SRCS	=  calc.cpp
 OBJS	= $(SRCS:.cpp=.o)
 EXE	= calc
 
-.PHONY:	all clean cleanall docs help
+.PHONY:	all clean cleanall docs help test
 
 all:	$(EXE)
 
@@ -68,8 +68,13 @@ help:
 	@echo "Targets:"
 	@echo "    all     - to build calc (default)"
 	@echo "    calc    - to build the calculator"
-	@echo "    clean   - to delete intermediates..."
-	@echo "    cleanll - to delete all targets and intermediates..."
-	@echo "    docs    - generate documentation..."
+	@echo "    clean   - to delete intermediates"
+	@echo "    cleanll - to delete all targets and intermediates"
+	@echo "    docs    - generate documentation."
 	@echo "    help    - prints this message"
+	@echo "    test    - brings calc upto date and runs regression tests" 
 	@echo ""
+
+test: all
+	./xcalc.sh
+

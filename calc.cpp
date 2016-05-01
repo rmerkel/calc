@@ -141,10 +141,13 @@ Token Token_stream::get() {
 	default:							// name, name = or error
 		if (std::isalpha(ch)) {
 			ct.string_value = ch;
-			while (ip->get(ch) && std::isalnum(ch))
-				ct.string_value += ch;
-
-			ip->putback(ch);
+			while (ip->get(ch))
+				if (std::isalnum(ch))
+					ct.string_value += ch;
+				else {
+					ip->putback(ch);
+					break;
+				}
 			ct.kind = Kind::name;
 			return ct;
 		}
