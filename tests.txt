@@ -1,0 +1,30 @@
+Test			 	Result
+---------------		---------------------
+4*3*2				24
+(1+2)*(3+4)			21
+1/2				 	0.5
+x=355		
+y=113		
+p = x/z				undefined variable 'z'
+z = 0;	
+p = x/z				divide by zero error
+x/y					3.1459
+-3-4				-7
+2/3				 	0.666667
+x = 2 * pi
+x					6.28319
+1e240*1e240			inf
+x=y=z=123.45
+y					123.45
+pi = 3				can not modify constant variable 'pi' 
+					3 - because we don't eat the rest of the statement!
+1.5^2.3				2.5410306
+exp(2.3*log(1.5))	2.5410306
+sin(pi/2)			1
+atan(1)*deg			45
+rand()				0..1.0
+atan2(1,0)			1.5708
+
+Command line arg:
+
+"4*3*2;(1+2)*(3+4);1/2;x=355;y=113;p=x/z;z=0;p=x/z;x/y;-3-4;2/3;x=2*pi;x;1e240*1e240;x=y=z=123.45;y;pi=3;1.5^2.3;exp(2.3*log(1.5));sin(pi/2);atan(1)*deg;rand();atan2(1,0)"
