@@ -51,14 +51,14 @@ utils.o:	utils.h
 #
 
 clean:
-	rm -r $(OBJS)
+	rm -f $(OBJS)
 
 #
 # Delete all targets and intermeadiate files...
 #
 
 cleanall: clean
-	rm -r $(EXE)
+	rm -f $(EXE)
 
 #
 # Generate documentation
