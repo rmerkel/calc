@@ -1,60 +1,69 @@
 #!/bin/bash
 
+#############################################################################
+# Initialize
+#############################################################################
+
 #
-# Create the expected results file (expected_results.txt)...
+# Create the expected results for command line testing; expected_results1.txt.
+#	(all commands are in one line sperated by ';')
 #
 
-cat > expected_results.txt <<LIMIT
+cat > expected_results1.txt <<LIMIT
 24
 21
 0.5
-355
-113
-error: divide by 0
-1
-0
-error: divide by 0
-1
+calc: undefined variable 'z' near line 1
+calc: divide by 0 near line 1
 3.14159
 -7
 0.666667
 6.28319
+inf
+113
+calc: can not modify constant variable 'pi' near line 1
+3
+2.54103
+2.54103
+1
+45
+1.5708
+LIMIT
+
+#
+# Create the expected results for standard input testing (expected_results1.txt)...
+#	(each command sperate lines)
+#
+
+cat > expected_results2.txt <<LIMIT
+24
+21
+0.5
+calc: undefined variable 'z' near line 7
+calc: divide by 0 near line 9
+3.14159
+-7
+0.666667
 6.28319
 inf
-123.45
-123.45
+113
+calc: can not modify constant variable 'pi' near line 17
 3
-error: bad token
-1.5
-2.3
-0
-0
-1.5
-error: primary expected
+2.54103
+2.54103
 1
-0
-1.5
-0
-1
-error: primary expected
-57.2958
-0
-error: primary expected
-1
-0
-error: bad token
-1
-0
+45
+1.5708
 LIMIT
 
 #
 # List of commands to test as a single command line string...
 #
 
-cmds="4*3*2;(1+2)*(3+4);1/2;x=355;y=113;p=x/z;z=0;p=x/z;x/y;-3-4;2/3;x=2*pi;x;1e240*1e240;x=y=z=123.45;y;pi=3;1.5^2.3;exp(2.3*log(1.5));sin(pi/2);atan(1)*deg;rand();atan2(1,0)"
+cmds="4*3*2;(1+2)*(3+4);1/2;x=355;y=113;p=x/z;z=0;p=x/z;x/y;-3-4;2/3;x=2*pi;x;1e240*1e240;x=y=z=123.45;y;pi=3;1.5^2.3;exp(2.3*log(1.5));sin(pi/2);atan(1)*deg;atan2(1,0)"
 
 #
-# Create a file of commands, but one per line (commands.txt)
+# Create a file of commands, but one command per line (commands.txt)
 #
 
 (
@@ -63,41 +72,55 @@ $cmds
 LIMIT
 ) | sed "s/;/\n/g" >commands.txt
 
+#############################################################################
+# The Tests
+#############################################################################
+
 #
-# Test 1
+# Test 1 - run the commands from a single command line argument
 #
 
 echo Test calc command line arguments...
 ./calc "$cmds" &> test.out
-rc=$?
-if [ "$rc" != "7" ]; then
-	echo ./calc returned the wrong number of errors: $rc s/b 7
+nerrors=$?
+if [ "$nerrors" != "3" ]; then
+	echo ./calc returned the wrong number of errors: $nerrors s/b 3
 	exit
 fi
-cmp test.out expected_results.txt || (echo "tests fail, try diff test.out expected_results.txt"; exit)
+cmp test.out expected_results1.txt
+if [ "$?" != "0" ]; then
+	echo "Test output (test.out) does not match expected (expexted_results.txt):"
+	diff test.out expected_results1.txt
+	exit
+fi
 
 #
-# Test 2
+# Test 2 - run the command from standard input
 #
 
 echo Test calc standard input...
 ./calc &> test.out <commands.txt
-rc=$?
-if [ "$rc" != "7" ]; then
-	echo ./calc returned the wrong number of errors: $rc s/b 7
+nerrors=$?
+if [ "$nerrors" != "3" ]; then
+	echo ./calc returned the wrong number of errors: $nerrors s/b 3
 	exit
 fi
-cmp test.out expected_results.txt || (echo "tests fail, try diff test.out expected_results.txt"; exit)
+cmp test.out expected_results2.txt
+if [ "$?" != "0" ]; then
+	echo "Test output (test.out) does not match expected (expexted_results.txt):"
+	diff test.out expected_results2.txt
+	exit
+fi
 
 # 
-# Test 3
+# Test 3 - more than one command line argument
 #
 
 echo Test too many calc command line arguments...
 ./calc one 2 three &> test.out
-rc=$?
-if [ "$rc" != "1" ]; then
-	echo ./calc returned the wrong number of errors: $rc s/b 7
+nerrors=$?
+if [ "$nerrors" != "1" ]; then
+	echo ./calc returned the wrong number of errors: $nerrors s/b 1
 	exit
 fi
 
@@ -105,6 +128,6 @@ fi
 # Cleanup and return...
 #
 
-rm -f test.out commands.txt expected_results.txt
+rm -f test.out commands.txt expected_results*.txt
 
 echo All tests passed!
