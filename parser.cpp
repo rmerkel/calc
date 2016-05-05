@@ -18,7 +18,12 @@
 
 static double expr(bool);
 
-/// Handle primary expressions @param get get a new token if true
+/** Handle primary expressions
+ *
+ *	@param get get a new token if true
+ *
+ *	@return primary expression value
+ */
 static double prim(bool get) {
 	if (get)
 		ts.get();						// read next token
@@ -33,15 +38,7 @@ static double prim(bool get) {
 	case Kind::name: {					// identifier
 		std::string name = ts.current().string_value;
 		SymValue &v = table[name];
-#if	1
 		ts.get();						// consume the identifier
-#else
-		if (ts.get().kind == Kind::assign) {
-			if (v.kind == Kind::constant)
-				return error("can not modify constant variable", name);
-			v = expr(true);
-		}
-#endif
 		if (v.kind == Kind::undefined)
 			return error("undefined variable", name);
 
@@ -122,7 +119,12 @@ static double prim(bool get) {
  *	Terminal expressions																		*
  ************************************************************************************************/
 
-/// multiple and divide. @param get get a new token if true
+/**	Terminal expressions, such as multiply and divide.
+ *
+ *	@param get get a new token if true
+ *
+ *	@return	Terminal expression value
+ */
 static double term(bool get) {
 	double left = prim(get);
 
@@ -162,7 +164,12 @@ static double term(bool get) {
  *	Expressons																					*
  ************************************************************************************************/
 
-/// add and subtract. @param get get a new token if true
+/** Expressions such as add, subtract
+ *
+ *	@param get get a new token if true
+ *
+ *	@return	expression value
+ */
 static double expr(bool get) {
 	double left = term(get);
 
@@ -183,10 +190,17 @@ static double expr(bool get) {
 }
 
 /************************************************************************************************
- *	Driver																						*
+ *	Statements																					*
  ************************************************************************************************/
 
-/// assignment
+/** Assignment
+ *
+ *	Handle attempt assignment to constants.
+ *
+ *	@param	get	get a new token if true
+ *
+ *	@return	assigned value.
+ */
 double assign(bool get) {
 	std::string name = ts.current().string_value;
 
@@ -202,6 +216,10 @@ double assign(bool get) {
 	} else
 		return error("syntax error - bad assignment");
 }
+
+/************************************************************************************************
+ *	Driver																						*
+ ************************************************************************************************/
 
 /// Initialize the parser...
 static void init() {
@@ -228,7 +246,10 @@ static void init() {
 	table["atan2"]	= SymValue(atan2);
 }
 
-/// driver... lists of expressions and assignments
+/**	Driver... lists of expressions, statemnts  and assignments
+ *
+ *	@return The number of errors encountered.
+ */
 unsigned calculator() {
 	init();
 	
@@ -242,12 +263,14 @@ unsigned calculator() {
 
 		if (ts.current().kind == Kind::name && ts.next().kind == Kind::assign) {
 			assign(true);
-			continue;
+			continue;							// Don't print the assigned value
 		}
 
+		// Print and save last result in "last"
 		double& v = (table["last"] = expr(false))->u.value;
 		std::cout << v << '\n';
 	}
 
 	return NumErrors;
 }
+
