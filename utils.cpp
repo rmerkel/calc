@@ -7,9 +7,9 @@
 //
 
 #include <iostream>
+#include <limits>
 
 #include "utils.h"
-
 
 std::string	ProgName 	= "calc";
 unsigned	NumErrors	= 0;
@@ -19,7 +19,7 @@ double error(const std::string& s) {
 	std::cerr << ProgName << ": " << s << " near line " << LineNum << std::endl;
 
 	++NumErrors;
-	return 1;
+	return std::numeric_limits<double>::quiet_NaN();
 }
 
 double error(const std::string& s, char ch) {
@@ -27,7 +27,7 @@ double error(const std::string& s, char ch) {
 		<< " near line " << LineNum << std::endl;
 
 	++NumErrors;
-	return 1;
+	return std::numeric_limits<double>::quiet_NaN();
 }
 
 double error(const std::string& s, const std::string& t) {
@@ -35,7 +35,7 @@ double error(const std::string& s, const std::string& t) {
 		<< " near line " << LineNum << std::endl;
 
 	++NumErrors;
-	return 1;
+	return std::numeric_limits<double>::quiet_NaN();
 }
 
 std::string fileName (const std::string path) {

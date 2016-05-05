@@ -10,24 +10,26 @@
 #
 
 cat > expected_results1.txt <<LIMIT
-24
-21
-0.5
+	24
+	21
+	0.5
 calc: undefined variable 'z' near line 1
 calc: divide by 0 near line 1
-3.14159
--7
-0.666667
-6.28319
-inf
-113
+	3.14159
+	-7
+	0.666667
+	6.28319
+	inf
+	123.45
+	123.45
+	123.45
 calc: can not modify constant variable 'pi' near line 1
-3
-2.54103
-2.54103
-1
-45
-1.5708
+	3
+	2.54103
+	2.54103
+	1
+	45
+	1.5708
 LIMIT
 
 #
@@ -36,31 +38,33 @@ LIMIT
 #
 
 cat > expected_results2.txt <<LIMIT
-24
-21
-0.5
+	24
+	21
+	0.5
 calc: undefined variable 'z' near line 7
 calc: divide by 0 near line 9
-3.14159
--7
-0.666667
-6.28319
-inf
-113
-calc: can not modify constant variable 'pi' near line 17
-3
-2.54103
-2.54103
-1
-45
-1.5708
+	3.14159
+	-7
+	0.666667
+	6.28319
+	inf
+	123.45
+	123.45
+	123.45
+calc: can not modify constant variable 'pi' near line 19
+	3
+	2.54103
+	2.54103
+	1
+	45
+	1.5708
 LIMIT
 
 #
 # List of commands to test as a single command line string...
 #
 
-cmds="4*3*2;(1+2)*(3+4);1/2;x=355;y=113;p=x/z;z=0;p=x/z;x/y;-3-4;2/3;x=2*pi;x;1e240*1e240;x=y=z=123.45;y;pi=3;1.5^2.3;exp(2.3*log(1.5));sin(pi/2);atan(1)*deg;atan2(1,0)"
+cmds="4*3*2;(1+2)*(3+4);1/2;x=355;y=113;p=x/z;z=0;p=x/z;x/y;-3-4;2/3;x=2*pi;x;1e240*1e240;x=y=z=123.45;x;y;z;pi=3;1.5^2.3;exp(2.3*log(1.5));sin(pi/2);atan(1)*deg;atan2(1,0)"
 
 #
 # Create a file of commands, but one command per line (commands.txt)
@@ -89,7 +93,7 @@ if [ "$nerrors" != "3" ]; then
 fi
 cmp test.out expected_results1.txt
 if [ "$?" != "0" ]; then
-	echo "Test output (test.out) does not match expected (expexted_results.txt):"
+	echo "Test output (test.out) does not match expected (expexted_results1.txt):"
 	diff test.out expected_results1.txt
 	exit
 fi

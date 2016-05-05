@@ -26,6 +26,7 @@
  *		term
  *
  *	term:
+		term ^ prim
  *		term * primary
  *		term / primary
  *		term % primary

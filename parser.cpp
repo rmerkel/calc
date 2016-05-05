@@ -1,6 +1,10 @@
 /**	@file parser.cpp
  *
  *	@brief	Parser implementation for a Calculator
+ *
+ *	This praser is a hybred of hoc from The UNIX Programing Enviorment by Kernighan and Pike, and
+ *	calc from TC++PL, 4th Edition by Stroustrup. The calc approch of breaking up expressions into
+ *  expressions, terminal and primaries was used for it's readability.
  */
 
 #include <iostream>
@@ -36,10 +40,15 @@ static double prim(bool get) {
 	}
 
 	case Kind::name: {					// identifier
-		std::string name = ts.current().string_value;
+		const std::string name = ts.current().string_value;
 		SymValue &v = table[name];
-		ts.get();						// consume the identifier
-		if (v.kind == Kind::undefined)
+
+		if (ts.get().kind == Kind::assign) {
+			if (v.kind == Kind::constant)
+				return error("can not modify constant variable", name);
+			v = expr(true);
+
+		} else if (v.kind == Kind::undefined)
 			return error("undefined variable", name);
 
 		return v;
@@ -77,7 +86,6 @@ static double prim(bool get) {
 				
 			ts.get();					// eat ')'
 			return v.u.func1(e);
-
 		}
 	}
 			
@@ -115,11 +123,12 @@ static double prim(bool get) {
 	}
 }
 
+
 /************************************************************************************************
  *	Terminal expressions																		*
  ************************************************************************************************/
 
-/**	Terminal expressions, such as multiply and divide.
+/**	Terminal expressions, such as multiply and divide, or primaries
  *
  *	@param get get a new token if true
  *
@@ -130,29 +139,27 @@ static double term(bool get) {
 
 	for (;;) {
 		switch(ts.current().kind) {
-			case Kind::expo:				// term ^ prim
-				left = Pow(left, expr(true));
-				break;
-
 			case Kind::mul:					// term * prim
 				left *= prim(true);
 				break;
 
 			case Kind::div:					// term / prim
-				if (auto d = prim(true)) {
+				if (auto d = prim(true))
 					left /= d;
-					break;
-				}
+				else
+					return error("divide by 0");
+				break;
 
-				return error("divide by 0");
+			case Kind::expo:				// term ^ prim
+				left = Pow(left, prim(true));
+				break;
 
 			case Kind::mod:					// term % prim
-				if (auto d = prim(true)) {
+				if (auto d = prim(true)) 
 					left = std::remainder(left, d);
-					break;
-				}
-
-				return error("divide by 0");
+				else
+					return error("divide by 0");
+				break;
 
 			default:
 				return left;
@@ -164,7 +171,7 @@ static double term(bool get) {
  *	Expressons																					*
  ************************************************************************************************/
 
-/** Expressions such as add, subtract
+/** Expressions such as add, subtract, terminals or primaries
  *
  *	@param get get a new token if true
  *
@@ -187,34 +194,6 @@ static double expr(bool get) {
 				return left;
 		}
 	}
-}
-
-/************************************************************************************************
- *	Statements																					*
- ************************************************************************************************/
-
-/** Assignment
- *
- *	Handle attempt assignment to constants.
- *
- *	@param	get	get a new token if true
- *
- *	@return	assigned value.
- */
-double assign(bool get) {
-	std::string name = ts.current().string_value;
-
-	if (ts.get().kind == Kind::assign) {
-		SymValue& v = table[name];
-
-		if (v.kind == Kind::constant)
-			return error("can not modify constant variable", name);
-
-		v = expr(get);
-		return v;
-
-	} else
-		return error("syntax error - bad assignment");
 }
 
 /************************************************************************************************
@@ -262,13 +241,21 @@ unsigned calculator() {
 			continue;
 
 		if (ts.current().kind == Kind::name && ts.next().kind == Kind::assign) {
-			assign(true);
-			continue;							// Don't print the assigned value
+			const std::string name = ts.current().string_value;
+			SymValue& v = table[name];
+
+			ts.get();							// consume identifier
+			if (v.kind == Kind::constant)
+				error("can not modify constant variable", name);
+			else
+				v = expr(true);
+			continue;							// Don't print assigned values
 		}
 
 		// Print and save last result in "last"
+
 		double& v = (table["last"] = expr(false))->u.value;
-		std::cout << v << '\n';
+		std::cout << '\t' << v << '\n';
 	}
 
 	return NumErrors;
