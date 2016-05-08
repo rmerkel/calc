@@ -1,10 +1,12 @@
-//
-//  math.cpp
-//  calc
-//
-//  Created by Randy Merkel on 5/19/13.
-//  Copyright (c) 2013 Randy Merkel. All rights reserved.
-//
+/** @file math.cpp
+ *
+ *	@brief	Math utiltiies
+ *
+ *	Implementation of the math utilites; see errcheck(d,s).
+ *
+ *	Created by Randy Merkel on 6/7/2013.
+ *	Copyright (c) 2016 Randy Merkel. All rights reserved.
+ */
 
 #include <cerrno>
 #include <cmath>
@@ -58,6 +60,6 @@ double Pow(double x, double y) {
 	return errcheck(std::pow(x, y), "exponentiation");
 }
 
-double integer(double x) {
+double Integer(double x) {
 	return static_cast<double> (int(x));
 }

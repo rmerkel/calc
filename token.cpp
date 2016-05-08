@@ -2,8 +2,8 @@
  *
  *	@brief	Token "kinds" and streams
  *
- *	Created by Randy Merkel on 6/7/13.
- *  Copyright (c) 2013 Randy Merkel. All rights reserved.
+ *	Created by Randy Merkel on 6/7/2013.
+ *  Copyright (c) 2016 Randy Merkel. All rights reserved.
  */
 
 #include <iostream>

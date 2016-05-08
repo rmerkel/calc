@@ -2,8 +2,8 @@
  *
  *	@brief	Token "kinds" and streams
  *
- *	Created by Randy Merkel on 6/7/13.
- *  Copyright (c) 2013 Randy Merkel. All rights reserved.
+ *	Created by Randy Merkel on 6/7/2013.
+ *  Copyright (c) 2016 Randy Merkel. All rights reserved.
  */
 
 #ifndef TOKEN_H
@@ -17,8 +17,7 @@
 
 /// Token kinds are representated by the integer value of its character
 enum class Kind : char {
-	none,								///< Placeholder for a 'real' token;
-	
+	none,								///< Placeholder for a 'real' token
 	name,								///< An identifier
 	constant,							///< A constant identifier
 	undefined,							///< An undefined identifier
@@ -54,6 +53,7 @@ struct Token {
 	std::string	string_value;			///< kind == name
 	double		number_value;			///< Kind == number
 
+	/// Construct a token of type k, stirng value "", number value 0.
     Token(Kind k) : kind{k}, number_value{0} {}
 };
 

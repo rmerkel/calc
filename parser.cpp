@@ -5,6 +5,9 @@
  *	This praser is a hybred of hoc from The UNIX Programing Enviorment by Kernighan and Pike, and
  *	calc from TC++PL, 4th Edition by Stroustrup. The calc approch of breaking up expressions into
  *  expressions, terminal and primaries was used for it's readability.
+ *
+ *	Created by Randy Merkel on 6/7/2013.
+ *	Copyright (c) 2016 Randy Merkel. All rights reserved.
  */
 
 #include <iostream>
@@ -219,7 +222,7 @@ static void init() {
 	table["log10"]	= SymValue(Log10);			// checks argument
 	table["exp"]	= SymValue(Exp);			// checks argument
 	table["sqrt"]	= SymValue(Sqrt);			// checks argument
-	table["int"]	= SymValue(integer);		// checks argument
+	table["int"]	= SymValue(Integer);		// checks argument
 	table["abs"]	= SymValue(fabs);			// checks argument
 
 	table["atan2"]	= SymValue(atan2);

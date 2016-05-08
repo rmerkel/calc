@@ -1,10 +1,10 @@
-//
-//  utils.cpp
-//  calc
-//
-//  Created by Randy Merkel on 5/19/13.
-//  Copyright (c) 2013 Randy Merkel. All rights reserved.
-//
+/**	@file utils.cpp
+ *
+ *	@brief Various utilities, mostly dealing with error handling.
+ *
+ *	Created by Randy Merkel on 6/7/2013.
+ *	Copyright (c) 2016 Randy Merkel. All rights reserved.
+ */
 
 #include <iostream>
 #include <limits>
