@@ -1,6 +1,6 @@
 /**	@file	symbol.h
  *
- *	@brief Symbal Table entry type
+ *	@brief class SymValue and SymbolTable
  *	
  *	Created by Randy Merkel on 6/7/2013.
  *	Copyright (c) 2016 Randy Merkel. All rights reserved.
@@ -58,7 +58,7 @@ struct SymValue {
 		double	value;					///< identifier; name or constant
 		double	(*func)();				///< builtin (no parameters)
 		double	(*func1)(double);		///< builtin1 (one parameters)
-		double 	(*func2)(double, double); ///< buildin2 (two parameters)
+		double 	(*func2)(double, double); ///< builtin2 (two parameters)
 	} u;								///< Symbol table value
 
 	/// Default constructor results in an undefined symbol
@@ -72,7 +72,7 @@ struct SymValue {
 	}
 
 	/// Construct a builtin
-	SymValue(double (*func)()) : kind(Kind::buildin) {
+	SymValue(double (*func)()) : kind(Kind::builtin) {
 		u.func = func;
 	}
 	
@@ -81,7 +81,7 @@ struct SymValue {
 		u.func1 = func;
 	}
 
-	/// Construct a buildin2
+	/// Construct a builtin2
 	SymValue(double (*func)(double, double)) : kind(Kind::builtin2) {
 		u.func2 = func;
 	}
@@ -95,8 +95,5 @@ struct SymValue {
 
 /// Alias for std::map<std::string, SymValue> 
 typedef std::map<std::string, SymValue> SymbolTable;
-
-/// A symbol table; doubles keyed by a string
-extern SymbolTable table;
 
 #endif

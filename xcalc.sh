@@ -81,10 +81,10 @@ LIMIT
 #############################################################################
 
 #
-# Test 1 - run the commands from a single command line argument
+# Test 1a - run the commands from a single command line argument
 #
 
-echo Test calc command line arguments...
+echo Test "calc expr" ...
 ./calc "$cmds" &> test.out
 nerrors=$?
 if [ "$nerrors" != "3" ]; then
@@ -99,10 +99,28 @@ if [ "$?" != "0" ]; then
 fi
 
 #
-# Test 2 - run the command from standard input
+# Test 1b - run the commands from a single command line argument
 #
 
-echo Test calc standard input...
+echo Test "calc -e expr" ...
+./calc -e "$cmds" &> test.out
+nerrors=$?
+if [ "$nerrors" != "3" ]; then
+	echo ./calc returned the wrong number of errors: $nerrors s/b 3
+	exit
+fi
+cmp test.out expected_results1.txt
+if [ "$?" != "0" ]; then
+	echo "Test output (test.out) does not match expected (expexted_results1.txt):"
+	diff test.out expected_results1.txt
+	exit
+fi
+
+#
+# Test 2a - read standard input
+#
+
+echo Test calc standard input ...
 ./calc &> test.out <commands.txt
 nerrors=$?
 if [ "$nerrors" != "3" ]; then
@@ -116,15 +134,51 @@ if [ "$?" != "0" ]; then
 	exit
 fi
 
-# 
-# Test 3 - more than one command line argument
+#
+# Test 2b - read standard input
 #
 
-echo Test too many calc command line arguments...
-./calc one 2 three &> test.out
+echo Test "calc -f -" ...
+./calc -f - &> test.out  <commands.txt
+nerrors=$?
+if [ "$nerrors" != "3" ]; then
+	echo ./calc returned the wrong number of errors: $nerrors s/b 3
+	exit
+fi
+cmp test.out expected_results2.txt
+if [ "$?" != "0" ]; then
+	echo "Test output (test.out) does not match expected (expexted_results.txt):"
+	diff test.out expected_results2.txt
+	exit
+fi
+
+#
+# Test 3a - read from a fle
+#
+
+echo Test "calc -f file" ...
+./calc &> test.out -f commands.txt
+nerrors=$?
+if [ "$nerrors" != "3" ]; then
+	echo ./calc returned the wrong number of errors: $nerrors s/b 3
+	exit
+fi
+cmp test.out expected_results2.txt
+if [ "$?" != "0" ]; then
+	echo "Test output (test.out) does not match expected (expexted_results.txt):"
+	diff test.out expected_results2.txt
+	exit
+fi
+
+#
+# Test 3b - try to read from a non-existant file
+#
+
+echo Test "calc -f file, where file doesn't exist ..."
+./calc -f blif 2> test.out
 nerrors=$?
 if [ "$nerrors" != "1" ]; then
-	echo ./calc returned the wrong number of errors: $nerrors s/b 1
+	echo "calc did not return a error!"
 	exit
 fi
 

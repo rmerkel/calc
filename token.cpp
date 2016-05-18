@@ -1,27 +1,23 @@
 /**	@file	token.cpp
  *
- *	@brief	Token "kinds" and streams
+ *	@brief	TokenStream implementation.
  *
  *	Created by Randy Merkel on 6/7/2013.
  *  Copyright (c) 2016 Randy Merkel. All rights reserved.
  */
 
-#include <iostream>
-
-#include "symbol.h"
 #include "token.h"
-#include "utils.h"
+#include "driver.h"
+#include "symbol.h"
 
 /************************************************************************************************
  *	Token Stream																				*
  ************************************************************************************************/
 
-Token_stream ts (std::cin);				///< The token-stream; by default standard input
-
 // public:
 
 /// Read and return the next token
-Token Token_stream::get() {
+Token TokenStream::get() {
 	if (ct.kind == Kind::none)
 		get_next();						// get the first token into nt
 	else if (nt.kind == Kind::none)
@@ -37,7 +33,7 @@ Token Token_stream::get() {
 	return ct;
 }
 
-Token& Token_stream::next()	{
+Token& TokenStream::next()	{
 	if (nt.kind == Kind::none)
 		get_next();
 
@@ -47,7 +43,7 @@ Token& Token_stream::next()	{
 // private:
 
 /// Read and return the next token
-Token Token_stream::get_next() {
+Token TokenStream::get_next() {
 	char ch = 0;
 
 	do {								// skip whitespace except '\n'
@@ -58,7 +54,7 @@ Token Token_stream::get_next() {
 
 	switch (ch) {
 		case '\n':
-			++LineNum;
+			++driver.lineNum;
 
 		case ';':
 			return nt = { Kind::eos };
@@ -89,7 +85,7 @@ Token Token_stream::get_next() {
 					nt.string_value += ch;
 
 				ip->putback(ch);
-				SymValue v = table[nt.string_value];
+				SymValue v = driver.table[nt.string_value];
 				if (v.kind == Kind::undefined || v.kind == Kind::constant)
 					nt.kind = Kind::name;	// possible undefined or constant identifier
 				else
@@ -97,7 +93,7 @@ Token Token_stream::get_next() {
 				return nt;
 			}
 
-			error("bad token", ch);
+			driver.error("bad token", ch);
 			return nt = { Kind::eos };
 	}
 }

@@ -1,6 +1,6 @@
 /** @file math.h
  *
- *	@brief	Built in math functions.
+ *	@brief	Math built-ins
  *
  *	Built in math functiions, most with error checking: returns NaN if the 
  *	underlying library function returns EDOM or ERANGE.
@@ -9,8 +9,8 @@
  *	Copyright (c) 2016 Randy Merkel. All rights reserved.
  */
 
-#ifndef calc_math_h
-#define calc_math_h
+#ifndef MATH_H
+#define MATH_H
 
 /// return psudo random value n the range 0-1
 double Rand();

@@ -1,3 +1,4 @@
 calc
 *.o
+*.d
 docs/

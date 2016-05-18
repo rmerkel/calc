@@ -8,8 +8,10 @@
 # Build a debug (DEBUG=1: default) or release (DEBUG=0) binary?
 ################################################################################
 
-CXXFLAGS+=-std=c++11 -Wall -Wextra
+# Support C++11, enable all, extra warnings, and generate dependency files
+CXXFLAGS+=-std=c++11 -Wall -Wextra -MMD -MP
 
+# Build for debugging by default, or release/optimized
 DEBUG	?= 1
 ifeq	($(DEBUG),1)
 	CXXFLAGS += -Og -g3 -DDEBUG
@@ -21,15 +23,17 @@ endif
 # Project files
 ################################################################################
 
-SRCS	= calc.cpp math.cpp parser.cpp symbol.cpp token.cpp utils.cpp
-OBJS	= $(SRCS:.cpp=.o)
+C_SRCS	= calc.cpp driver.cpp math.cpp parser.cpp symbol.cpp token.cpp
+SRCS	= $(C_SRCS) $(wildcard *.h)
+OBJS	= $(C_SRCS:.cpp=.o)
+DEPS	= $(C_SRCS:.cpp=.d)
 EXE		= calc
+
+.PHONY:	all clean cleanall docs help pr test
 
 ################################################################################
 #	The default target...
 ################################################################################
-
-.PHONY:	all clean cleanall docs help pr test
 
 all:	$(EXE) docs
 
@@ -38,25 +42,20 @@ all:	$(EXE) docs
 ################################################################################
 
 $(EXE): $(OBJS)
-	$(CXX) $(CXXFLAGS) $^ -o $@
+	$(CXX) $(CXXFLAGS) $(OBJS) -o $@
 
 ################################################################################
-# Header dependencies
+# Include generated dependencies
 ################################################################################
 
-calc.o:		utils.h math.h parser.h symbol.h token.h
-math.o:		math.h utils.h
-parser.o:	math.h parser.h symbol.h utils.h
-symbol.o: 	symbol.h
-token.o:	symbol.h token.h utils.h
-utils.o:	utils.h
+-include $(DEPS)
 
 ################################################################################
 # Cleanup intermediates...
 ################################################################################
 
 clean:
-	@rm -f $(OBJS)
+	@rm -f $(OBJS) $(DEPS)
 
 ################################################################################
 # Cleanup all targets and intermediates...
@@ -69,8 +68,10 @@ cleanall: clean
 # Generate documentation
 ################################################################################
 
-docs:
-	@doxygen
+docs:	docs/html/index.html
+
+docs/html/index.html:	Doxyfile $(SRCS)
+	doxygen
 
 ################################################################################
 # Print a help message...
@@ -97,7 +98,7 @@ help:
 ################################################################################
 
 pr:
-	@pr $(SRCS) makefile | expand -4 | lpr
+	@pr $(C_SRCS) makefile | expand -4 | lpr
 
 ################################################################################
 # Bring calc up to date and run some tests...

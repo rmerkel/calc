@@ -1,6 +1,8 @@
 /**	@file	token.h
  *
- *	@brief	Token "kinds" and streams
+ *	@brief	enum Kind, class Token and TokenStream.
+ *
+ *	Token "kinds" and streams
  *
  *	Created by Randy Merkel on 6/7/2013.
  *  Copyright (c) 2016 Randy Merkel. All rights reserved.
@@ -10,6 +12,8 @@
 #define TOKEN_H
 
 #include <sstream>
+
+class Driver;
 
 /************************************************************************************************
  *	Token "kinds" (types)																		*
@@ -21,7 +25,7 @@ enum class Kind : char {
 	name,								///< An identifier
 	constant,							///< A constant identifier
 	undefined,							///< An undefined identifier
-	buildin,							///< Builtin functin with no paramers
+	builtin,							///< Builtin functin with no paramers
 	builtin1,							///< Builtin function with one parameter
 	builtin2,							///< Builtin function with two parameters
 	number,								///< floating-point literal
@@ -29,18 +33,20 @@ enum class Kind : char {
 
 	// End of non-printing character codes for ASCII and UNICODE
 
-	plus	= '+', minus	= '-',
-	mul		= '*', div 		= '/',
+	plus	= '+',						///< Addition
+	minus	= '-',						///< Subtraction
+	mul		= '*',						///< Multiplication
+	div 	= '/',						///< Division
 	mod 	= '%',						///< Modulus (remainder)
 	expo	= '^',						///< Expnentiation
 
 	eos		= ';',						///< End of statement
-	assign	= '=',
+	assign	= '=',						///< Assignment
 
-	comma	= ',',
+	comma	= ',',						///< Comma
 	
-	lp		= '(',
-	rp		= ')'
+	lp		= '(',						///< Opening parentheses
+	rp		= ')'						///< Closing parentheses
 };
 
 /************************************************************************************************
@@ -58,18 +64,20 @@ struct Token {
 };
 
 /// A stream of tokens... with look-ahead
-class Token_stream {
+class TokenStream {
 public:
 	/// Initialize with an input stream which this does not own
-	Token_stream(std::istream& s) : ip(&s), owns(false) {}
+	TokenStream(Driver& drv, std::istream& s) : driver{drv}, ip{&s}, owns{false} {}
 
 	/// Initialize with an input stream which this does own
-	Token_stream(std::istream* p) :ip(p), owns(true) {}
+	TokenStream(Driver& drv, std::istream* s) : driver{drv}, ip{s}, owns{true} {}
 
-	~Token_stream()						{	close();	}
+	~TokenStream()						{	close();	}
 
 	Token get();
-	Token& current() 	{ return ct; }	///< The current token
+
+	/// The current token
+	Token& current() 					{	return ct;	}
 	Token& next();						///< Next token (look-ahead)
 
 	/// Set the input stream to s
@@ -87,15 +95,14 @@ public:
 	}
 
 private:
-	void close()						{ if (owns) delete ip;	}
-	Token get_next();
-
+	Driver&			driver;				///< The parser driver
 	std::istream*	ip;					///< Poiner to an input stream
-	bool			owns;				///< Does the Token_stream own this istream?
+	bool			owns;				///< Does the TokenStream own this istream?
 	Token 			ct { Kind::none };	///< Current token
 	Token 			nt { Kind::none };	///< Next token
-};
 
-extern Token_stream ts;
+	void close()						{ if (owns) delete ip;	}
+	Token get_next();
+};
 
 #endif

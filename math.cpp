@@ -1,6 +1,6 @@
 /** @file math.cpp
  *
- *	@brief	Math utiltiies
+ *	@brief	Math built-in implementation
  *
  *	Implementation of the math utilites; see errcheck(d,s).
  *
@@ -10,23 +10,16 @@
 
 #include <cerrno>
 #include <cmath>
-#include <cstdlib>
+#include <limits>
 #include <random>
-#include <string>
 
 #include "math.h"
-#include "utils.h"
 
 /// Check result of standard library call
-static double errcheck(double d, const std::string& s) {
-	if (EDOM == errno) {
+static double errcheck(double d) {
+	if (0 != errno) {
 		errno = 0;
-		error(s, "argument out of domain");
-
-	} else if (ERANGE == errno) {
-		errno = 0;
-		error(s, "result out of range");
-
+		return std::numeric_limits<double>::quiet_NaN();
 	}
 
 	return d;
@@ -41,23 +34,23 @@ double Rand() {	// return psudo random value n the range 0-1
 }
 
 double Log(double x) {
-	return errcheck(std::log(x), "log");
+	return errcheck(std::log(x));
 }
 
 double Log10(double x) {
-	return errcheck(std::log10(x), "log");
+	return errcheck(std::log10(x));
 }
 
 double Exp(double x) {
-	return errcheck(std::exp(x), "exp");
+	return errcheck(std::exp(x));
 }
 
 double Sqrt(double x) {
-	return errcheck(std::sqrt(x), "sqrt");
+	return errcheck(std::sqrt(x));
 }
 
 double Pow(double x, double y) {
-	return errcheck(std::pow(x, y), "exponentiation");
+	return errcheck(std::pow(x, y));
 }
 
 double Integer(double x) {

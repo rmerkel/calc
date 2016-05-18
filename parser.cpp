@@ -1,6 +1,6 @@
 /**	@file parser.cpp
  *
- *	@brief	Parser implementation for a Calculator
+ *	@brief	Parser implementation
  *
  *	This praser is a hybred of hoc from The UNIX Programing Enviorment by Kernighan and Pike, and
  *	calc from TC++PL, 4th Edition by Stroustrup. The calc approch of breaking up expressions into
@@ -12,18 +12,11 @@
 
 #include <iostream>
 #include <cmath>
-#include <ctime>
 
-#include "math.h"
 #include "parser.h"
+#include "driver.h"
+#include "math.h"
 #include "symbol.h"
-#include "utils.h"
-
-/************************************************************************************************
- *	Primary expressions																			*
- ************************************************************************************************/
-
-static double expr(bool);
 
 /** Handle primary expressions
  *
@@ -31,7 +24,7 @@ static double expr(bool);
  *
  *	@return primary expression value
  */
-static double prim(bool get) {
+double Parser::prim(bool get) {
 	if (get)
 		ts.get();						// read next token
 
@@ -48,11 +41,11 @@ static double prim(bool get) {
 
 		if (ts.get().kind == Kind::assign) {
 			if (v.kind == Kind::constant)
-				return error("can not modify constant variable", name);
+				return driver.error("can not modify constant variable", name);
 			v = expr(true);
 
 		} else if (v.kind == Kind::undefined)
-			return error("undefined variable", name);
+			return driver.error("undefined variable", name);
 
 		return v;
 	}
@@ -63,12 +56,12 @@ static double prim(bool get) {
 	case Kind::plus:					// unary plus
 		return prim(true);
 
-	case Kind::buildin: {				// func ()
+	case Kind::builtin: {				// func ()
 		SymValue& v = table[ts.current().string_value];
 		if (ts.get().kind != Kind::lp)
-		 	return error("'(' expected");
+		 	return driver.error("'(' expected");
 		else if (ts.get().kind != Kind::rp)
-			return error("')' expected");
+			return driver.error("')' expected");
 		else {
 			ts.get();					// eat ')'
 			return v.u.func();
@@ -78,14 +71,14 @@ static double prim(bool get) {
 	case Kind::builtin1: {				// func ( expression )
 		std::string name = ts.current().string_value;
 		if (ts.get().kind != Kind::lp)
-			return error("'(' expected");
+			return driver.error("'(' expected");
 
 		else {
 			SymValue& v = table[name];
 			double e = expr(true);
 				
 			if (ts.current().kind != Kind::rp)
-				return error("')' expected");
+				return driver.error("')' expected");
 				
 			ts.get();					// eat ')'
 			return v.u.func1(e);
@@ -99,37 +92,32 @@ static double prim(bool get) {
 
 			double e1 = expr(true);
 			if (ts.current().kind != Kind::comma)
-				return error("',' expected");
+				return driver.error("',' expected");
 
 			double e2 = expr(true);
 			if (ts.current().kind != Kind::rp)
-				return error("')' expected");
+				return driver.error("')' expected");
 				
-			ts.get();					// eat ')'
+			ts.get();				// eat ')'
 			return v.u.func2(e1, e2);
 
 		} else
-			return error("'(' expected");
+			return driver.error("'(' expected");
 	}
 
 	case Kind::lp: {					// ( expression )
 		auto e = expr(true);
 		if (ts.current().kind != Kind::rp)
-			return error("')' expected");
+			return driver.error("')' expected");
 
 		ts.get();						// eat ')'
 		return e;
 	}
 
 	default:
-		return error ("primary expected");
+		return driver.error ("primary expected");
 	}
 }
-
-
-/************************************************************************************************
- *	Terminal expressions																		*
- ************************************************************************************************/
 
 /**	Terminal expressions, such as multiply and divide, or primaries
  *
@@ -137,7 +125,7 @@ static double prim(bool get) {
  *
  *	@return	Terminal expression value
  */
-static double term(bool get) {
+double Parser::term(bool get) {
 	double left = prim(get);
 
 	for (;;) {
@@ -150,7 +138,7 @@ static double term(bool get) {
 				if (auto d = prim(true))
 					left /= d;
 				else
-					return error("divide by 0");
+					return driver.error("divide by 0");
 				break;
 
 			case Kind::expo:				// term ^ prim
@@ -161,7 +149,7 @@ static double term(bool get) {
 				if (auto d = prim(true)) 
 					left = std::remainder(left, d);
 				else
-					return error("divide by 0");
+					return driver.error("divide by 0");
 				break;
 
 			default:
@@ -170,17 +158,13 @@ static double term(bool get) {
 	}
 }
 
-/************************************************************************************************
- *	Expressons																					*
- ************************************************************************************************/
-
 /** Expressions such as add, subtract, terminals or primaries
  *
  *	@param get get a new token if true
  *
  *	@return	expression value
  */
-static double expr(bool get) {
+double Parser::expr(bool get) {
 	double left = term(get);
 
 	for (;;) {
@@ -199,12 +183,52 @@ static double expr(bool get) {
 	}
 }
 
-/************************************************************************************************
- *	Driver																						*
- ************************************************************************************************/
+/// Assignment statement
+void Parser::assign() {
+	const std::string name = ts.current().string_value;
+	SymValue& v = table[name];
 
-/// Initialize the parser...
-static void init() {
+	ts.get();							// consume identifier
+	if (v.kind == Kind::constant)
+		driver.error("can not modify constant variable", name);
+	else
+		v = expr(true);
+}
+
+/**	Lists of expressions and assignments...
+ *
+ *	@return The number of errors encountered.
+ */
+unsigned Parser::lists() {
+	for (;;) {
+		ts.get();
+		if (ts.current().kind == Kind::end)
+			break;
+
+		if (ts.current().kind == Kind::eos)
+			continue;
+
+		if (ts.current().kind == Kind::name && ts.next().kind == Kind::assign) {
+			assign();
+			continue;							// Don't print assigned values
+		}
+
+		// Print and save last result in "last"
+
+		double& v = (table["last"] = expr(false))->u.value;
+		std::cout << '\t' << v << '\n';
+	}
+
+	return driver.nErrors;
+}
+
+/** Construct a parser...
+ *
+ *	Results in a parser reading from standard input.
+ *
+ *	@param	drv		The parser driver
+ */
+Parser::Parser(Driver& drv) : driver{drv}, ts{drv.ts}, table{drv.table} {
 	if (!table.empty()) return;					// Install constants, built-ins just once
 	
 	table["pi"]		= SymValue( 3.14159265358979323846);
@@ -228,39 +252,10 @@ static void init() {
 	table["atan2"]	= SymValue(atan2);
 }
 
-/**	Driver... lists of expressions, statemnts  and assignments
+/**	Parse calculator/hoc program(s)...
  *
  *	@return The number of errors encountered.
  */
-unsigned calculator() {
-	init();
-	
-	for (;;) {
-		ts.get();
-		if (ts.current().kind == Kind::end)
-			break;
-
-		if (ts.current().kind == Kind::eos)
-			continue;
-
-		if (ts.current().kind == Kind::name && ts.next().kind == Kind::assign) {
-			const std::string name = ts.current().string_value;
-			SymValue& v = table[name];
-
-			ts.get();							// consume identifier
-			if (v.kind == Kind::constant)
-				error("can not modify constant variable", name);
-			else
-				v = expr(true);
-			continue;							// Don't print assigned values
-		}
-
-		// Print and save last result in "last"
-
-		double& v = (table["last"] = expr(false))->u.value;
-		std::cout << '\t' << v << '\n';
-	}
-
-	return NumErrors;
+unsigned Parser::operator()() {
+	return lists();
 }
-
